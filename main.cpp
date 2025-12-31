@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cmath>
 // for (int y = 0; y < height; y++)
 // {
 //     for (int x = 0; x < width; x++)
@@ -40,7 +41,7 @@ int countNeighbors(int y, int x)
             int nx = x + dx;
 
             if (ny < 0 || nx < 0 || ny >= height || nx >= width)
-                count++; // treat borders as walls
+                count++; 
             else
                 count += map[ny][nx];
         }
@@ -108,7 +109,7 @@ for (int y = 0; y < height; y++)
 {
     for (int x = 0; x < width; x++)
     {
-        // 45% chance of being black
+        
         map[y][x] = (rand() % 100 < 60) ? 1 : 0;
     }
 }
@@ -127,12 +128,35 @@ for (int iter = 0; iter < 5; iter++)
                 newMap[y][x] = 0;
         }
     }
-
-    // copy back
     for (int y = 0; y < height; y++)
         for (int x = 0; x < width; x++)
             map[y][x] = newMap[y][x];
 }
+
+
+float cx = width / 2.0f;
+float cy = height / 2.0f;
+float maxDist = sqrt(cx * cx + cy * cy);
+
+for (int y = 0; y < height; y++)
+{
+    for (int x = 0; x < width; x++)
+    {
+        float dx = x - cx;
+        float dy = y - cy;
+
+        float dist = sqrt(dx * dx + dy * dy);
+        float t = dist / maxDist;  
+
+      
+        if (t > 0.75f)
+            map[y][x] = 0;
+    }
+    
+    
+}
+
+
 for (int y = 0; y < height; y++)
 {
     for (int x = 0; x < width; x++)
@@ -141,20 +165,19 @@ for (int y = 0; y < height; y++)
 
         if (map[y][x] == 1)
         {
-            // BLACK
             pixels[i]     = 0;
             pixels[i + 1] = 255;
             pixels[i + 2] = 0;
         }
         else
         {
-            // WHITE
             pixels[i]     = 255;
             pixels[i + 1] = 0;
             pixels[i + 2] = 0;
         }
     }
 }
+
     f.write((char *)pixels, imageSize);
     std::cout << "debug";
 }
