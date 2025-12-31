@@ -24,6 +24,29 @@ const int width = 300;
 const int height = 300;
 const int imageSize = width * height * 3;
 const int juma = 100;
+int map[height][width];
+int newMap[height][width];
+int countNeighbors(int y, int x)
+{
+    int count = 0;
+
+    for (int dy = -1; dy <= 1; dy++)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            if (dx == 0 && dy == 0) continue;
+
+            int ny = y + dy;
+            int nx = x + dx;
+
+            if (ny < 0 || nx < 0 || ny >= height || nx >= width)
+                count++; // treat borders as walls
+            else
+                count += map[ny][nx];
+        }
+    }
+    return count;
+}
 
 int main()
 {
@@ -51,34 +74,87 @@ int main()
 
     unsigned char pixels[imageSize];
 
+    // for (int y = 0; y < height; y++)
+    // {
+    //     for (int x = 0; x < width; x++)
+    //     {
+    //         if (x == y)
+    //         {
+    //             float t = (float)(x + y) / (float)((width - 1) + (height - 1));
+
+    //             unsigned char r = (unsigned char)((1 - t) * 255);
+    //             unsigned char g = 0;
+    //             unsigned char b = (unsigned char)(t * 255);
+
+    //             int i = (y * width + x) * 3;
+
+    //             // BMP = BGR
+    //             pixels[i] = b;
+    //             pixels[i + 1] = g;
+    //             pixels[i + 2] = r;
+    //         }
+    //         else
+    //         {
+    //             int i = (y * width + x) * 3;
+    //             pixels[i] = 255;
+    //             pixels[i + 1] = 255;
+    //             pixels[i + 2] = 255;
+    //         }
+    //     }
+    // }
+    srand(42); // fixed seed (or time(0))
+
+for (int y = 0; y < height; y++)
+{
+    for (int x = 0; x < width; x++)
+    {
+        // 45% chance of being black
+        map[y][x] = (rand() % 100 < 60) ? 1 : 0;
+    }
+}
+
+for (int iter = 0; iter < 5; iter++)
+{
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
         {
-            if (x == y)
-            {
-                float t = (float)(x + y) / (float)((width - 1) + (height - 1));
+            int neighbors = countNeighbors(y, x);
 
-                unsigned char r = (unsigned char)((1 - t) * 255);
-                unsigned char g = 0;
-                unsigned char b = (unsigned char)(t * 255);
-
-                int i = (y * width + x) * 3;
-
-                // BMP = BGR
-                pixels[i] = b;
-                pixels[i + 1] = g;
-                pixels[i + 2] = r;
-            }
+            if (neighbors >= 5)
+                newMap[y][x] = 1;
             else
-            {
-                int i = (y * width + x) * 3;
-                pixels[i] = 255;
-                pixels[i + 1] = 255;
-                pixels[i + 2] = 255;
-            }
+                newMap[y][x] = 0;
         }
     }
+
+    // copy back
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+            map[y][x] = newMap[y][x];
+}
+for (int y = 0; y < height; y++)
+{
+    for (int x = 0; x < width; x++)
+    {
+        int i = (y * width + x) * 3;
+
+        if (map[y][x] == 1)
+        {
+            // BLACK
+            pixels[i]     = 0;
+            pixels[i + 1] = 255;
+            pixels[i + 2] = 0;
+        }
+        else
+        {
+            // WHITE
+            pixels[i]     = 255;
+            pixels[i + 1] = 0;
+            pixels[i + 2] = 0;
+        }
+    }
+}
     f.write((char *)pixels, imageSize);
     std::cout << "debug";
 }
